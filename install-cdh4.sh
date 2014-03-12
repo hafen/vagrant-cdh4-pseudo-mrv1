@@ -54,3 +54,46 @@ echo Start MapReduce
 
 for x in `cd /etc/init.d ; ls hadoop-0.20-mapreduce-*` ; do sudo -E service $x start ; done
 
+## install other components
+
+sudo apt-get --yes --force-yes install git
+sudo apt-get --yes --force-yes install ant
+sudo apt-get --yes --force-yes install maven
+
+## install R 3.0.3
+
+CRAN=${CRAN:-"http://cran.rstudio.com"}
+OS=$(uname -s)
+
+PATH="${PATH}:/usr/texbin"
+
+R_BUILD_ARGS=${R_BUILD_ARGS-"--no-build-vignettes --no-manual"}
+R_CHECK_ARGS=${R_CHECK_ARGS-"--no-build-vignettes --no-manual --as-cran"}
+
+sudo apt-get --yes --force-yes install software-properties-common
+sudo apt-get --yes --force-yes install python-software-properties
+
+# Set up our CRAN mirror.
+sudo add-apt-repository "deb ${CRAN}/bin/linux/ubuntu $(lsb_release -cs)/"
+sudo gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E084DAB9
+
+# Add marutter's c2d4u repository.
+sudo add-apt-repository -y "ppa:marutter/rrutter"
+sudo add-apt-repository -y "ppa:marutter/c2d4u"
+
+# Update after adding all repositories.  Retry several times to work around
+# flaky connection to Launchpad PPAs.
+sudo apt-get --yes --force-yes update -qq
+
+# Install an R development environment. qpdf is also needed for
+# --as-cran checks:
+#   https://stat.ethz.ch/pipermail/r-help//2012-September/335676.html
+sudo apt-get --yes --force-yes install --no-install-recommends r-base-dev r-recommended qpdf
+
+# Change permissions for /usr/local/lib/R/site-library
+# This should really be via 'staff adduser travis staff'
+# but that may affect only the next shell
+sudo chmod 2777 /usr/local/lib/R /usr/local/lib/R/site-library
+
+
+
